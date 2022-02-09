@@ -1,88 +1,29 @@
-package org.javacourse.xlassloader;
+package org.javacourse.beanconfig;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
+
+import org.javacourse.beanconfig.model.Student;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 /**
  * @author zyb
  */
-public class XlassLoader extends ClassLoader {
+@Configuration
+public class AnnotationConfig {
 
-    private final String suffix = ".xlass";
-
-    @Override
-    protected Class<?> findClass(String fileName) throws ClassNotFoundException {
-
-        int end = fileName.length();
-        int start = 0 ;
-        int pathLen = fileName.lastIndexOf(File.separator,start);
-        if(pathLen != -1){
-            start = pathLen + 1;
-        }
-        int fileNameLen = fileName.lastIndexOf(suffix,start);
-        if(fileNameLen != -1){
-            end = fileNameLen;
-        }
-        String className = fileName.substring(start,end);
-
-        if(fileName.endsWith(suffix)){
-            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
-            try {
-                if(inputStream!=null) {
-                    int length = inputStream.available();
-                    byte[] byteArray = new byte[length];
-                    int readLen = inputStream.read(byteArray);
-                    byte[] decodeBytes = decode(byteArray);
-                    return defineClass(className, decodeBytes, 0, readLen);
-                }
-                else{
-                    return null;
-                }
-            } catch (IOException e) {
-                throw new ClassNotFoundException(fileName, e);
-            } finally {
-                close(inputStream);
-            }
-        }
-        else{
-            return null;
-        }
-    }
-
-    private byte[] decode(byte[] byteArray) {
-        byte[] decodeByteArray = new byte[byteArray.length];
-        for (int i = 0; i < byteArray.length; i++) {
-            decodeByteArray[i] = (byte) (255 - byteArray[i]);
-        }
-        return decodeByteArray;
-    }
-
-    private void close(Closeable res) {
-        if (null != res) {
-            try {
-                res.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    @Bean(name="student")
+    @Scope("prototype")
+    public Student student(){
+        return new Student("张三", 30);
     }
 
     public static void main(String[] args) throws Exception {
-
-        String fileName = "resources/Hello.xlass";
-
-        ClassLoader classLoader = new XlassLoader();
-
-        Class<?> clazz = classLoader.loadClass(fileName);
-
-        Object instance = clazz.getDeclaredConstructor().newInstance();
-        for (Method m : clazz.getDeclaredMethods()) {
-            System.out.println(clazz.getSimpleName() + "has method:" + m.getName());
-            m.invoke(instance);
-        }
-
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(AnnotationConfig.class);
+        Student student1 = (Student) applicationContext.getBean("student");
+        System.out.println("name:"+student1.getName());
     }
+
 }
