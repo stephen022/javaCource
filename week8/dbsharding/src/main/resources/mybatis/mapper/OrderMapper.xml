@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.javacource.dbsharding.mapper.OrderMapper" >
+
+    <insert id="insertOne" parameterType="org.javacource.dbsharding.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order
+            (id, user_id,code,name,total,status,create_time)
+        VALUES
+            (#{id}, #{user_id}, #{code},#{name},#{total},#{status},#{createTime})
+    </insert>
+
+    <delete id="delete">
+        delete from order where id = #{id}
+    </delete>
+
+    <update id="update" parameterType="org.javacource.dbsharding.entity.Order">
+        UPDATE order
+        SET
+        <trim suffixOverrides="," suffix="WHERE id = #{id}">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="total != null">total = #{total},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+
+        </trim>
+    </update>
+
+    <select id="query" resultType="org.javacource.dbsharding.entity.Order" parameterType="HashMap">
+        select * from order
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+        </trim>
+    </select>
+
+</mapper>
