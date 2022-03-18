@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+
+spring:
+  redis:
+    sentinel:
+      master: redismaster
+      nodes: 172.16.29.12:16381,172.16.29.12:16382
